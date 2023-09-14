@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { verify, JwtPayload } from 'jsonwebtoken';
 import config from '../config';
 import { ForbiddenError } from '../exceptions/forbiddenError';
+import debug from 'debug';
+
+const log: debug.IDebugger = debug('app:checkJWT');
 
 export interface CustomRequest extends Request {
     token: JwtPayload;
@@ -10,9 +13,9 @@ export interface CustomRequest extends Request {
 export const checkJwt = (req: Request, res: Response, next: NextFunction) => {
     const token = <string>req.headers['authorization'];
     const jwt = token?.split(' ')[1];
-    console.log("jwt: ", jwt);
     let jwtPayload;
 
+    log("Token: ", jwt);
     try {
         jwtPayload = <any>verify(jwt, config.jwt.secret!, {
             complete: true,
@@ -41,9 +44,7 @@ export const checkJwt = (req: Request, res: Response, next: NextFunction) => {
 
         throw new ForbiddenError('e_701', message, error.message);
     }
-    console.log(jwtPayload);
 
-    console.log(jwtPayload);
     if (!jwtPayload.payload.scope.includes('read')) {
         throw new ForbiddenError('e_702', 'No tiene el permiso necesario.');
     }
