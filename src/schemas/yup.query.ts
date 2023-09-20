@@ -25,18 +25,18 @@ export const querySchema = object({
         })
     }),
     query: object({
-        id: string().min(1),
-        nombres: string().min(1),
-        primerApellido: string().min(1),
-        segundoApellido: string().min(1),
-        escolaridadNivel: string().min(1),
+        id: string(),
+        nombres: string(),
+        primerApellido: string(),
+        segundoApellido: string(),
+        escolaridadNivel: string(),
         datosEmpleoCargoComision: object({
-            nombreEntePublico: string().min(1),
-            entidadFederativa: string().min(2).max(2),
-            municipioAlcaldia: string().min(3).max(3),
-            empleoCargoComision: string().min(1),
-            nivelOrdenGobierno: string().min(1),
-            nivelEmpleoCargoComision: string().min(1),
+            nombreEntePublico: string(),
+            entidadFederativa: string().max(2),
+            municipioAlcaldia: string().max(3),
+            empleoCargoComision: string(),
+            nivelOrdenGobierno: string(),
+            nivelEmpleoCargoComision: string(),
         }),
         bienesInmuebles: object({
             superficieConstruccion: object({
@@ -47,7 +47,7 @@ export const querySchema = object({
                 min: number().integer(),
                 max: number().integer(),
             }),
-            formaAdquisicion: string().min(1),
+            formaAdquisicion: string(),
             valorAdquisicion: object({
                 min: number().integer(),
                 max: number().integer(),
