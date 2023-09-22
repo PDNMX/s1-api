@@ -45,6 +45,7 @@ class Declaracion {
         console.log("query: ", query);
 
         const q = query.query || undefined;
+        const s = query.sort || undefined;
         let nQuery = {};
         let nSort = {};
         let page = query.page || 1;
@@ -129,7 +130,8 @@ class Declaracion {
                 if (min && min !== 0) nRange = { $gte: min };
                 if (typeof max !== 'undefined') nRange = { $lte: max };
             } else {
-                nRange = { $gte: min, $lte: max };
+                nRange = { $elemMatch: { $gte: min, $lte: max } };
+                // nRange = { $gte: min, $lte: max };
                 if (min === max) nRange = { $eq: min }
             }
 
@@ -138,6 +140,7 @@ class Declaracion {
         }
 
         if (q?.bienesInmuebles?.valorAdquisicion && Object.keys(q.bienesInmuebles.valorAdquisicion).length > 0) {
+            // const opr = 'declaracion.situacionPatrimonial.bienesInmuebles.bienInmueble.valorAdquisicion.valor';
             const { valorAdquisicion } = q.bienesInmuebles
             const { min, max } = valorAdquisicion;
             let nRange = {};
@@ -147,15 +150,142 @@ class Declaracion {
                 if (min && min !== 0) nRange = { $gte: min };
                 if (typeof max !== 'undefined') nRange = { $lte: max };
             } else {
+                // nRange = { $elemMatch: { $gte: min, $lte: max } };
+                // nRange = { '$and': [{ $gte: min, $lte: max }] };
                 nRange = { $gte: min, $lte: max };
                 if (min === max) nRange = { $eq: min }
             }
 
+
+            // if (Object.keys(valorAdquisicion).length === 1) {
+            //     if (min && min !== 0) nRange = { [opr]: { $gte: min } };
+            //     if (typeof max !== 'undefined') nRange = { [opr]: { $lte: max } };
+            // } else {
+            //     // nRange = { $elemMatch: { $gte: min, $lte: max } };
+            //     // nRange = { '$and': [{ $gte: min, $lte: max }] };
+            //     nRange = { $and: [{ [opr]: { $gte: min } }, { [opr]: { $lte: max } }] };
+            //     if (min === max) nRange = { [opr]: { $eq: min } }
+            // }
+
             //results[*].declaracion.situacionPatrimonial.bienesInmuebles.bienInmueble[*].valorAdquisicion.valor
             if (Object.keys(nRange).length > 0) nQuery = { ...nQuery, ['declaracion.situacionPatrimonial.bienesInmuebles.bienInmueble.valorAdquisicion.valor']: nRange }
+            // if (Object.keys(nRange).length > 0) nQuery = { ...nQuery, ...nRange }
         }
 
-        console.log("nQuery: ", nQuery);
+
+        if (q?.totalIngresosNetos && Object.keys(q.totalIngresosNetos).length > 0) {
+            const { totalIngresosNetos } = q;
+            const { min, max } = totalIngresosNetos;
+            let nRange = {};
+            console.log("min, max : ", min, max);
+
+            if (Object.keys(totalIngresosNetos).length === 1) {
+                if (min && min !== 0) nRange = { $gte: min };
+                if (typeof max !== 'undefined') nRange = { $lte: max };
+            } else {
+                nRange = { $elemMatch: { $gte: min, $lte: max } };
+                // nRange = { $gte: min, $lte: max };
+                if (min === max) nRange = { $eq: min }
+            }
+
+
+            //results[*].declaracion.situacionPatrimonial.ingresos.ingresoMensualNetoDeclarante.valor
+            const ini = 'declaracion.situacionPatrimonial.ingresos.ingresoMensualNetoDeclarante.valor'
+            const mod = 'declaracion.situacionPatrimonial.ingresos.ingresoAnualNetoDeclarante.valor'
+            const con = 'declaracion.situacionPatrimonial.ingresos.ingresoConclusionNetoDeclarante.valor'
+            if (Object.keys(nRange).length > 0) nQuery = { ...nQuery, $or: [{ [ini]: nRange }, { [mod]: nRange }, { [con]: nRange }] }
+        }
+
+        if (q?.bienesInmuebles?.formaAdquisicion && q.bienesInmuebles.formaAdquisicion !== '') {
+            nQuery = { ...nQuery, ['declaracion.situacionPatrimonial.bienesInmuebles.bienInmueble.formaAdquisicion.clave']: this.queryString(q.bienesInmuebles.formaAdquisicion) }
+        }
+
+        if (s?.nombres) {
+            const order = (s.nombres === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosGenerales.nombre']: order };
+        }
+
+        if (s?.primerApellido) {
+            const order = (s.primerApellido === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosGenerales.primerApellido']: order };
+        }
+
+        if (s?.segundoApellido) {
+            const order = (s.segundoApellido === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosGenerales.segundoApellido']: order };
+        }
+
+        if (s?.escolaridadNivel) {
+            const order = (s.escolaridadNivel === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosCurricularesDeclarante.escolaridad.nivel.clave']: order };
+        }
+
+
+        if (s?.datosEmpleoCargoComision?.nombreEntePublico) {
+            const order = (s.datosEmpleoCargoComision.nombreEntePublico === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosEmpleoCargoComision.nombreEntePublico']: order };
+        }
+
+        if (s?.datosEmpleoCargoComision?.entidadFederativa) {
+            const order = (s.datosEmpleoCargoComision.entidadFederativa === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosEmpleoCargoComision.domicilioMexico.entidadFederativa.clave']: order };
+        }
+
+        if (s?.datosEmpleoCargoComision?.municipioAlcaldia) {
+            const order = (s.datosEmpleoCargoComision.municipioAlcaldia === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosEmpleoCargoComision.domicilioMexico.municipioAlcaldia.clave']: order };
+        }
+
+
+        if (s?.datosEmpleoCargoComision?.empleoCargoComision) {
+            const order = (s.datosEmpleoCargoComision.empleoCargoComision === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosEmpleoCargoComision.empleoCargoComision']: order };
+        }
+
+        if (s?.datosEmpleoCargoComision?.nivelEmpleoCargoComision) {
+            const order = (s.datosEmpleoCargoComision.nivelEmpleoCargoComision === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosEmpleoCargoComision.nivelEmpleoCargoComision']: order };
+        }
+
+
+        if (s?.datosEmpleoCargoComision?.nivelOrdenGobierno) {
+            const order = (s.datosEmpleoCargoComision.nivelOrdenGobierno === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.datosEmpleoCargoComision.nivelOrdenGobierno']: order };
+        }
+
+
+
+        if (s?.totalIngresosNetos) {
+            const order = (s.totalIngresosNetos === 'asc' ? 1 : -1);
+            const ini = 'declaracion.situacionPatrimonial.ingresos.ingresoMensualNetoDeclarante.valor'
+            const mod = 'declaracion.situacionPatrimonial.ingresos.ingresoAnualNetoDeclarante.valor'
+            const con = 'declaracion.situacionPatrimonial.ingresos.ingresoConclusionNetoDeclarante.valor'
+
+            nSort = { ...nSort, [ini]: order, [mod]: order, [con]: order };
+        }
+
+        if (s?.bienesInmuebles?.superficieConstruccion) {
+            const order = (s.bienesInmuebles.superficieConstruccion === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.bienesInmuebles.bienInmueble.superficieConstruccion.valor']: order };
+        }
+
+        if (s?.bienesInmuebles?.superficieTerreno) {
+            const order = (s.bienesInmuebles.superficieTerreno === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.bienesInmuebles.bienInmueble.superficieTerreno.valor']: order };
+        }
+
+        if (s?.bienesInmuebles?.formaAdquisicion) {
+            const order = (s.bienesInmuebles.formaAdquisicion === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.bienesInmuebles.bienInmueble.formaAdquisicion.clave']: order };
+        }
+
+        if (s?.bienesInmuebles?.valorAdquisicion) {
+            const order = (s.bienesInmuebles.valorAdquisicion === 'asc' ? 1 : -1);
+            nSort = { ...nSort, ['declaracion.situacionPatrimonial.bienesInmuebles.bienInmueble.valorAdquisicion.valor']: order };
+        }
+
+        console.log("nQuery: ", JSON.stringify(nQuery));
+        console.log("nSort: ", JSON.stringify(nSort));
 
         try {
             let rQuery = await this.model.paginate(nQuery, { page, limit: pageSize, sort: nSort, collation: { locale: 'es' } }).then();
