@@ -13,11 +13,11 @@ const config = {
     port: process.env.API_S1_PORT || 4000,
     prefix: process.env.API_S1_PREFIX || 's1',
     oauth_mongodb: {
-        host: process.env.MONGO_S1_HOST || '127.0.0.1',
-        user: process.env.MONGO_S1_USER || 'root',
-        pass: process.env.MONGO_S1_PASS || 'soporte',
+        host: process.env.MONGO_S1_HOST || '',
+        user: process.env.MONGO_S1_USER || '',
+        pass: process.env.MONGO_S1_PASS || '',
         port: process.env.MONGO_S1_PORT || 27017,
-        database: process.env.MONGO_S1_DATABASE || 'admin',
+        database: process.env.MONGO_S1_DATABASE || 's1-api',
         authSource: process.env.MONGO_S1_DB_AUTH || 'admin'
     }
 };
